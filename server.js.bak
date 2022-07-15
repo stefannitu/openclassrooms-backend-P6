@@ -1,0 +1,132 @@
+const express = require('express');
+const mongoose = require('mongoose');
+const app = express();
+const Sauce = require('./models/sauce');
+const User = require('./models/user');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+
+app.use(express.json());
+
+app.use((req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Headers', 'Origin,X-Requested-With,Content,Accept,Content-Type,Authorization');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,PATCH,OPTIONS');
+    next()
+});
+
+app.post('/api/auth/signup', (req, res) => {
+    bcrypt.hash(req.body.password, 10)
+        .then((hash) => {
+            const user = new User({
+                email: req.body.email,
+                password: hash
+            });
+            user.save()
+                .then(() => {
+                    res.status(201).json({
+                        message: req.body.email + " added to db"
+                    })
+                })
+                .catch((error) => {
+                    res.status(401).json(
+                        { error }
+                    );
+                })
+        })
+});
+
+app.post('/api/auth/login', (req, res) => {
+    User.findOne({
+        email: req.body.email
+    })
+        .then((user) => {
+            if (!user) {
+                return res.status(401).json({
+                    error: new Error('user not found')
+                });
+            }
+            bcrypt.compare(req.body.password, user.password)
+                .then((valid) => {
+                    if (!valid) {
+                        return res.status(401).json({
+                            error: "wrong password"
+                        });
+                    }
+
+                    const token = jwt.sign(
+                        { userId: user._id },
+                        'LONG_RANDOM_SECRET_STRING',
+                        { expiresIn: '24h' })
+
+                    res.status(200).json({
+                        userId: user._id,
+                        token: token
+                    })
+                })
+        })
+        .catch((err) => {
+            res.status(400).json({
+                message: "user not found"
+            })
+        })
+});
+
+app.get('/api/sauces', (req, res) => {
+    Sauce.find()
+        .then(
+            (sauces) => {
+                res.status(200).json(sauces)
+            }
+        )
+        .catch((err) => {
+            res.json({ err });
+        })
+})
+
+app.post('/api/sauces', (req, res) => {
+    const sauce = new Sauce({
+        name: req.body.name,
+        manufacturer: req.body.manufacturer,
+        description: req.body.description,
+        heat: req.body.heat,
+        likes: 0,
+        dislikes: 0,
+        imageUrl: '',
+        mainPepper: req.body.mainPepper,
+        usersLiked: [ '233131231' ],
+        usersDisliked: [ '32322121' ],
+        userId: req.body.userId,
+    });
+    res.json(req.body)
+
+
+
+})
+
+app.get('/api/sauces/:id', (req, res) => {
+    Sauce.findOne(req.params._id)
+        .then((sauce) => {
+            res.status(200).json(sauce)
+        })
+})
+
+app.delete('/api/sauces/:id', (req, res) => {
+    Sauce.deleteOne(req.params._id)
+        .then(() => {
+            res.status(200).json({ message: "deleted" })
+        })
+        .catch((err) => {
+            res.status(501).json({
+                message: "cant delete"
+            })
+        })
+})
+
+mongoose.connect('mongodb+srv://stefan:Xudo8697@piiquante.lv3qo.mongodb.net/?retryWrites=true&w=majority')
+    .then(() => {
+        app.listen(3000, () => console.log('server running on port 3000'));
+    })
+    .catch((err) => {
+        console.log(err);
+    })

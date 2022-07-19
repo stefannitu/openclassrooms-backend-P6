@@ -7,31 +7,32 @@ const login = (req, res) => {
     // check if user exist in database
     User.findOne({
         email: req.body.email,
-    }).then(user => {
+    }).then(dbUser => {
         // if cant find user in db status 501
-        if (!user) {
+        if (!dbUser) {
             return res.status(401).json({
                 "message": "Please check email or password"
             })
         }
         // else  encrypt received pass and compare with pass from db
-        bcrypt.compare(req.body.password, user.password)
+        bcrypt.compare(req.body.password, dbUser.password)
             .then(valid => {
+                //if pass from db doesnt match pass from request body
                 if (!valid) {
                     return res.status(401).json({
                         "message": "wrong password"
                     })
                 }
-                //if ok send back userid and jwt token
-                const token = jwt.sign({ UserId: user._id }, 'RANDOM_TOKEN_SECRET', { expiresIn: '24h' });
+                //else-  send back userid and jwt token
+                const token = jwt.sign({ UserId: dbUser._id }, 'RANDOM_TOKEN_SECRET', { expiresIn: '24h' });
                 res.status(200).json({
-                    UserId: user._id,
+                    userId: dbUser._id,
                     token: token
                 })
 
             })
             .catch(error => {
-                res.status(500).json({
+                res.status(401).json({
                     error: error
                 })
             })

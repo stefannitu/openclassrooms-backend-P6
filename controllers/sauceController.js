@@ -40,6 +40,7 @@ const saucesPost = (req, res) => {
         })
 }
 
+//route to get one product
 const saucesGetOne = (req, res) => {
     Sauce.findOne({ _id: req.params.id })
         .then((data) => {
@@ -50,17 +51,20 @@ const saucesGetOne = (req, res) => {
         })
 }
 
+//route to update oe product
 const saucesPutOne = (req, res) => {
     Sauce.findOne({ _id: req.params.id })
         .then((data) => {
+            // check if product belongs to user
             if (req.userId !== data.userId) {
                 return res.status(401).json({ message: "Operation not allowed" })
             }
 
             let sauce = new Sauce({ _id: req.params.id });
 
-            // if user update product photo
+            // if user updated product photo
             if (req.file) {
+                //delete old product picture from server
                 deletePictureHelper(data);
                 const url = req.protocol + '://' + req.get('host');
                 req.body.sauce = JSON.parse(req.body.sauce);
@@ -74,6 +78,7 @@ const saucesPutOne = (req, res) => {
                     mainPepper: req.body.sauce.mainPepper,
                 }
             } else {
+                //if we do not need to update photo
                 sauce = {
                     _id: req.params.id,
                     name: req.body.name,
@@ -97,17 +102,16 @@ const saucesPutOne = (req, res) => {
         })
 }
 
-
+//delete one product
 const saucesDeleteOne = (req, res) => {
     Sauce.findOne({ _id: req.params.id })
         .then((data) => {
-            // if user from request !== owner of post in db
+            // check if product belongs to user
             if (data.userId !== req.userId) {
                 return res.status(401).json({ message: "Operation not allowed" })
             }
+            //delete product picture from server
             deletePictureHelper(data);
-
-
             Sauce.deleteOne({ _id: req.params.id })
                 .then(() => {
                     res.status(200).json({ message: "Product deleted" })
@@ -115,7 +119,6 @@ const saucesDeleteOne = (req, res) => {
                 .catch(error => {
                     res.status(400).json({ message: error.message })
                 })
-
         })
         .catch(error => {
             res.status(500).json({ message: error.message })
@@ -123,64 +126,65 @@ const saucesDeleteOne = (req, res) => {
 
 }
 
+//logic for product likes/dislikes
 const saucesLike = (req, res) => {
-
     Sauce.findOne({ _id: req.params.id })
         .then((data) => {
-            let dt;
-            if (req.body.like === 1 && !data.usersLiked.includes(req.body.userId) && !data.usersDisliked.includes(req.body.userId)) {
-                (data.usersLiked).push(req.body.userId)
-                const likesLenght = data.usersLiked.length;
-                const dislikesLenght = data.usersDisliked.length;
-                dt = {
-                    usersLiked: data.usersLiked,
-                    likes: likesLenght,
-                    dislikes: dislikesLenght,
-                };
-            } else if (req.body.like === -1 && !data.usersLiked.includes(req.body.userId) && !data.usersDisliked.includes(req.body.userId)) {
-                (data.usersDisliked).push(req.body.userId)
-                const likesLenght = data.usersLiked.length;
-                const dislikesLenght = data.usersDisliked.length;
-                dt = {
-                    usersDisliked: data.usersDisliked,
-                    likes: likesLenght,
-                    dislikes: dislikesLenght,
-                };
-            } else if (req.body.like === 0) {
-                if (data.usersLiked.includes(req.body.userId)) {
-                    const newUsersLiked = data.usersLiked.filter(user => user !== req.body.userId);
-                    const likesLenght = newUsersLiked.length;
-                    const dislikesLenght = data.usersDisliked.length;
-                    dt = {
-                        usersLiked: newUsersLiked,
-                        likes: likesLenght,
-                        dislikes: dislikesLenght,
-                    };
-                }
-                if (data.usersDisliked.includes(req.body.userId)) {
-                    const newUsersDisliked = data.usersDisliked.filter(user => user !== req.body.userId);
-                    const likesLenght = data.usersLiked.length;
-                    const dislikesLenght = newUsersDisliked.length;
-                    dt = {
-                        usersDisliked: newUsersDisliked,
-                        likes: likesLenght,
-                        dislikes: dislikesLenght,
-                    };
+            //destructuring
+            const { userId, like } = req.body;
+            const { usersLiked, usersDisliked } = data;
+            let productLikes;
+
+            //OPTIONS:
+            //1 - like
+            //0 - retract like/dislike
+            //-1 - dislike
+
+            //user did not vote yet
+            if (!usersLiked.includes(userId)
+                && !usersDisliked.includes(userId)) {
+
+                switch (like) {
+                    case 1:
+                        usersLiked.push(userId)
+                        break;
+                    case -1:
+                        usersDisliked.push(userId)
+                        break;
+                    default:
+                        res.status(405).json({ message: "Not allowed" });
+                        break;
                 }
             } else {
-                console.log("no condition met");
+                //if user is retracting like/dislike
+                if (like == 0) {
+                    if (usersDisliked.includes(userId)) {
+                        const index = usersDisliked.findIndex(element => element == userId)
+                        usersDisliked.splice(index, 1);
+                    }
+                    if (usersLiked.includes(userId)) {
+                        const index = usersLiked.findIndex(element => element == userId)
+                        usersLiked.splice(index, 1);
+                    }
+                } else {
+                    res.status(405).json({ message: "Not allowed" });
+                }
             }
 
-            Sauce.updateOne({ _id: req.params.id }, dt).then(() => {
-                res.json({ "message": req.body.userId });
+            const likesLenght = usersLiked.length;
+            const dislikesLenght = usersDisliked.length;
+            productLikes = {
+                usersLiked: usersLiked,
+                usersDisliked: usersDisliked,
+                likes: likesLenght,
+                dislikes: dislikesLenght,
+            };
 
+            Sauce.updateOne({ _id: req.params.id }, productLikes).then(() => {
+                res.json({ "message": userId });
             })
-
         })
-
 }
-
-
 
 module.exports = {
     saucesGet,

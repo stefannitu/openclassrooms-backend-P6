@@ -22,8 +22,6 @@ const storage = multer.diskStorage({
         const name = `${file.fieldname}${Date.now()}.${extension}`;
 
         callback(null, name);
-
-        // callback(null, name + '.' + extension);
     }
 });
 

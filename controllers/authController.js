@@ -1,3 +1,4 @@
+require('dotenv').config()
 const User = require('../models/user');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -24,7 +25,7 @@ const login = (req, res) => {
                         return res.status(401).json({ message: "Wrong user or password" })
                     }
                     //else-  send back userid and json web token
-                    const token = jwt.sign({ UserId: dbUser._id }, 'RANDOM_TOKEN_SECRET', { expiresIn: '24h' });
+                    const token = jwt.sign({ UserId: dbUser._id }, process.env.SECRET, { expiresIn: '24h' });
                     res.status(200).json({
                         userId: dbUser._id,
                         token: token

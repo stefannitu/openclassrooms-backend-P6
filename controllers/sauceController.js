@@ -1,6 +1,6 @@
 const Sauce = require('../models/sauce');
 const fs = require('fs');
-const deletePic = require('../helpers/deletePictureHelper');
+const deletePictureHelper = require('../helpers/deletePictureHelper');
 
 
 //route to get One Product
@@ -61,7 +61,7 @@ const saucesPutOne = (req, res) => {
 
             // if user update product photo
             if (req.file) {
-
+                deletePictureHelper(data);
                 const url = req.protocol + '://' + req.get('host');
                 req.body.sauce = JSON.parse(req.body.sauce);
                 sauce = {
@@ -105,12 +105,8 @@ const saucesDeleteOne = (req, res) => {
             if (data.userId !== req.userId) {
                 return res.status(401).json({ message: "Operation not allowed" })
             }
-            deletePic(data);
-            //remove product from database and delete picture of product
-            /*  let picName = data.imageUrl.split('/images/')[ 1 ];
-             fs.unlink(`./images/${picName}`, (error) => {
-                 if (error) return console.log(`test`)
-             }) */
+            deletePictureHelper(data);
+
 
             Sauce.deleteOne({ _id: req.params.id })
                 .then(() => {
@@ -166,7 +162,7 @@ const saucesLike = (req, res) => {
                     const likesLenght = data.usersLiked.length;
                     const dislikesLenght = newUsersDisliked.length;
                     dt = {
-                        usersLiked: newUsersDisliked,
+                        usersDisliked: newUsersDisliked,
                         likes: likesLenght,
                         dislikes: dislikesLenght,
                     };

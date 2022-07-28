@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const sauceSchema = mongoose.Schema({
+const sauceSchema = new mongoose.Schema({
     userId: { type: String, },
     name: { type: String, },
     manufacturer: { type: String, },

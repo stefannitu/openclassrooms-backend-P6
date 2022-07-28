@@ -10,6 +10,11 @@ const sauceRouter = require('./routes/sauceRoutes');
 
 app.use('/images', express.static(path.join(__dirname, 'images')));
 
+/* 
+    Cross-Origin Resource Sharing (CORS) is an HTTP-header based mechanism that allows
+     a server to indicate any origins (domain, scheme, or port) other than its own from 
+     which a browser should permit loading resources. 
+*/
 app.use(cors());
 app.use(express.json());
 

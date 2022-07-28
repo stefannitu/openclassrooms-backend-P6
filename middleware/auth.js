@@ -8,8 +8,8 @@ const auth = (req, res, next) => {
         const idFromToken = decodedToken.UserId;
         req.userId = idFromToken;
         next();
-
-    } catch (error) {
+    }
+    catch (error) {
         res.status(401).json({
             message: error.message
         });

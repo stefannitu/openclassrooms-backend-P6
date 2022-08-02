@@ -3,7 +3,7 @@ const User = require('../models/user');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-// controller for user login
+// route for login
 const login = (req, res) => {
 
     // check if user exist in database
@@ -16,7 +16,6 @@ const login = (req, res) => {
                 })
             }
             // else  encrypt received pass and compare with pass from db
-            // bcrypt is a library for  password-hashing
 
             bcrypt.compare(req.body.password, dbUser.password)
                 .then(valid => {
@@ -35,11 +34,12 @@ const login = (req, res) => {
         .catch(error => res.status(500).json({ message: error.message }))
 }
 
+
+//route for signup
 const signup = (req, res) => {
     //check if req.body.email is a valid password
     const EMAILPATTERN = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
     if (!EMAILPATTERN.test(req.body.email)) return res.status(404).json({ message: "Invalid Email" })
-
     //hash password
     bcrypt.hash(req.body.password, 10)
         .then((hash) => {
@@ -47,13 +47,13 @@ const signup = (req, res) => {
                 email: req.body.email,
                 password: hash,
             });
-
             //save new user in database
             user.save()
                 .then(() => {
                     res.status(201).json({ message: "User added to database" });
                 }).catch((error) => {
-                    res.status(401).json({ message: error.message })
+                    console.log(error);
+                    res.status(503).json({ message: 'test' })
                 })
         })
         .catch(error => res.status(500).json({ message: error.message }))

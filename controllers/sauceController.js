@@ -51,16 +51,16 @@ const saucesGetOne = (req, res) => {
         })
 }
 
-//route to update oe product
+//route to update one product
 const saucesPutOne = (req, res) => {
     Sauce.findOne({ _id: req.params.id })
         .then((data) => {
             // check if product belongs to user
             if (req.userId !== data.userId) {
-                return res.status(401).json({ message: "Operation not allowed" })
+                return res.status(403).json({ message: "Operation not allowed" })
             }
 
-            let sauce = new Sauce({ _id: req.params.id });
+            let sauce = new Sauce({});
 
             // if user updated product photo
             if (req.file) {
@@ -69,7 +69,6 @@ const saucesPutOne = (req, res) => {
                 const url = req.protocol + '://' + req.get('host');
                 req.body.sauce = JSON.parse(req.body.sauce);
                 sauce = {
-                    _id: req.params.id,
                     name: req.body.sauce.name,
                     manufacturer: req.body.sauce.manufacturer,
                     description: req.body.sauce.description,
@@ -80,7 +79,6 @@ const saucesPutOne = (req, res) => {
             } else {
                 //if we do not need to update photo
                 sauce = {
-                    _id: req.params.id,
                     name: req.body.name,
                     manufacturer: req.body.manufacturer,
                     description: req.body.description,
@@ -88,6 +86,9 @@ const saucesPutOne = (req, res) => {
                     imageUrl: req.body.ImageUrl,
                     mainPepper: req.body.mainPepper,
                 }
+
+                console.log("has something else: ", req.body.sauce, req.file, req.body.name);
+
             }
             Sauce.updateOne({ _id: req.params.id }, sauce)
                 .then(() => {
@@ -108,16 +109,18 @@ const saucesDeleteOne = (req, res) => {
         .then((data) => {
             // check if product belongs to user
             if (data.userId !== req.userId) {
-                return res.status(401).json({ message: "Operation not allowed" })
+                return res.status(403).json({ message: "Operation not allowed" })
             }
             //delete product picture from server
-            deletePictureHelper(data);
+            if (!deletePictureHelper(data)) {
+                return res.status(500).json({ message: "error deleteing" })
+            }
             Sauce.deleteOne({ _id: req.params.id })
                 .then(() => {
                     res.status(200).json({ message: "Product deleted" })
                 })
                 .catch(error => {
-                    res.status(400).json({ message: error.message })
+                    res.status(500).json({ message: error.message })
                 })
         })
         .catch(error => {

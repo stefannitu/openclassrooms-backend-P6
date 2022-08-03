@@ -15,13 +15,13 @@ const login = async (req, res) => {
         //else
         const match = await bcrypt.compare(req.body.password, userData.password)
         if (match) {
-            const token = jwt.sign({ user: userData._id }, process.env.SECRET, { expiresIn: '24h' })
+            const token = jwt.sign({ userId: userData._id }, process.env.SECRET, { expiresIn: '24h' })
             return res.status(200).json({
                 userId: userData._id,
                 token: token
             })
         }
-        res.status(401).json({ message: 'Wrong password' })
+        res.status(404).json({ message: 'Wrong email/password' })
     } catch (error) {
         console.log(error)
     }

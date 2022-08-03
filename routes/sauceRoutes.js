@@ -1,9 +1,10 @@
 const authMiddleware = require('../middleware/authMiddleware')
 const multerMiddleware = require('../middleware/multerMiddleware')
-const { sauceGetAll, sauceGetOne, saucePostOne, saucePutOne, sauceDeleteOne } = require('../controllers/sauceController')
+const { sauceGetAll, sauceGetOne, saucePostOne, saucePutOne, sauceDeleteOne, sauceLike } = require('../controllers/sauceController')
 const express = require('express')
 const router = express.Router()
 
+router.post('/:id/like', authMiddleware, sauceLike);
 router.put('/:id', authMiddleware, multerMiddleware, saucePutOne)
 router.get('/:id', authMiddleware, sauceGetOne)
 router.get('/', authMiddleware, sauceGetAll)

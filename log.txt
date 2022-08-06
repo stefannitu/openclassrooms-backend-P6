@@ -1,0 +1,1 @@
+Error: ENOENT: no such file or directory, unlink './public/images/image1659790370451.jpg' 

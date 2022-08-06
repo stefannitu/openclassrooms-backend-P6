@@ -1,7 +1,6 @@
 const sauceModel = require('../models/sauceModel')
 const jwtCheck = require('../helpers/jwtHelper')
 const deletePicture = require('../helpers/deletePictureHelper')
-const mongoose = require('mongoose');
 
 //get all products from database
 const sauceGetAll = async (req, res) => {
@@ -76,9 +75,9 @@ const saucePutOne = async (req, res) => {
         // try to update sauce in database
         const sauceUpdate = await sauceModel.findOneAndUpdate({ _id: req.params.id, userId: req.userId }, { $set: sauce }).exec()
         if (sauceUpdate == null) {
-            return res.status(401).json({ message: 'Update failed product not found' })
+            return res.status(401).json({ message: 'Update failed, product not found' })
         }
-        //if udapte was succesfull check picture was updated also
+        //if update was succesfull check picture was updated also
         //if picture was updated then delete old photo
         //finoneandupdate returns document before update
         if (sauce.imageUrl) {
@@ -94,10 +93,12 @@ const saucePutOne = async (req, res) => {
 //route to delete one element from database
 const sauceDeleteOne = async (req, res) => {
     try {
+        //deleting product if belongs to user
         const sauceDelete = await sauceModel.findOneAndDelete({ _id: req.params.id, userId: req.userId })
         if (sauceDelete == null) {
             res.status(403).json({ message: 'Product operation not allowed ' })
         } else {
+            // if delete was ok delete picture 
             deletePicture(sauceDelete.imageUrl)
             res.status(200).json({ message: 'Product was deleted' })
         }

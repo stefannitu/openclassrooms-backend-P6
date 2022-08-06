@@ -10,7 +10,7 @@ const login = async (req, res) => {
         const userData = await userModel.findOne({ email: req.body.email })
         //if user not in database 
         if (!userData) {
-            return res.status(404).json({ message: "User not found" })
+            return res.status(401).json({ message: "Wrong user and password" })
         }
         //else
         const match = await bcrypt.compare(req.body.password, userData.password)
@@ -21,20 +21,20 @@ const login = async (req, res) => {
                 token: token
             })
         }
-        res.status(404).json({ message: 'Wrong email/password' })
+        res.status(401).json({ message: 'Wrong email/password' })
     } catch (error) {
-        console.log(error)
+        res.status(500).json({message:"Server error on login route"})
     }
 }
 
 //signup ROUTE
 const signup = async (req, res) => {
+    //failsafe frontend login 
     //REGEX check if email is valid
     //check if password field is not empty
     const EMAIL_PATTERN = /^\w{2,}([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
     if (!EMAIL_PATTERN.test(req.body.email) || req.body.password.trim() == '') {
-        return res.status(401).json({
-            message: 'Invalid email/password'
+        return res.status(401).json({message: 'Invalid email/password'
         })
     }
     //if signup data is ok then continue
@@ -45,7 +45,7 @@ const signup = async (req, res) => {
             email: req.body.email,
             password: password_hash
         })
-        //save user in database
+        //save user and hash password in database
         const savedUser = await user.save(user)
         if (savedUser) {
             res.status(203).json({ message: 'User saved' })

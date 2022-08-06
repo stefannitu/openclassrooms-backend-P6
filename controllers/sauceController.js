@@ -1,5 +1,4 @@
 const sauceModel = require('../models/sauceModel')
-const jwtCheck = require('../helpers/jwtHelper')
 const deletePicture = require('../helpers/deletePictureHelper')
 
 //get all products from database

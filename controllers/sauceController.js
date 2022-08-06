@@ -106,8 +106,6 @@ const sauceDeleteOne = async (req, res) => {
     }
 }
 
-
-
 //logic for product likes/dislikes
 const sauceLike = (req, res) => {
     sauceModel.findOne({ _id: req.params.id })
@@ -162,7 +160,7 @@ const sauceLike = (req, res) => {
                 dislikes: dislikesLenght,
             };
 
-            Sauce.updateOne({ _id: req.params.id }, productLikes)
+            sauceModel.updateOne({ _id: req.params.id }, productLikes)
                 .then(() => {
                     res.json({ message: 'Likes/Dislikes updated' });
                 })

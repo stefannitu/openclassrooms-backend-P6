@@ -4,15 +4,11 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const path = require('path');
 
-
-
-
 const app = express();
 const authRouter = require('./routes/authRoutes');
 const sauceRouter = require('./routes/sauceRoutes');
 
-
-app.use('/images', express.static(path.join(__dirname, 'images')));
+app.use('/images', express.static(path.join(__dirname, './public/images')));
 
 /* 
     Cross-Origin Resource Sharing (CORS) is an HTTP-header based mechanism that allows

@@ -87,8 +87,6 @@ const saucesPutOne = (req, res) => {
                     mainPepper: req.body.mainPepper,
                 }
 
-                console.log("has something else: ", req.body.sauce, req.file, req.body.name);
-
             }
             Sauce.updateOne({ _id: req.params.id }, sauce)
                 .then(() => {
@@ -112,9 +110,8 @@ const saucesDeleteOne = (req, res) => {
                 return res.status(403).json({ message: "Operation not allowed" })
             }
             //delete product picture from server
-            if (!deletePictureHelper(data)) {
-                return res.status(500).json({ message: "error deleteing" })
-            }
+            deletePictureHelper(data)
+            
             Sauce.deleteOne({ _id: req.params.id })
                 .then(() => {
                     res.status(200).json({ message: "Product deleted" })

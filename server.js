@@ -16,16 +16,13 @@ app.use(express.static('public'))
 //  Routes
 app.use('/api/auth', authRoutes)
 app.use('/api/sauces', sauceRoutes)
-
-const connectAndStart = async () => {
-    try {
-        await mongoose.connect(process.env.MONGO_URI)
-        app.listen(process.env.PORT || 3000, () => {
-            console.log('Connection established.Server running on port', process.env.PORT);
-        })
-    } catch (err) {
-        console.log(err)
-    }
-}
-
-connectAndStart();
+;(async () => {
+	try {
+		await mongoose.connect(process.env.MONGO_URI)
+		app.listen(process.env.PORT || 3000, () => {
+			console.log('Connection established.Server running on port', process.env.PORT)
+		})
+	} catch (err) {
+		console.log(err)
+	}
+})()
